@@ -19,7 +19,7 @@ var self = this;
         <?js } ?>
         <span class="code-name">
             <?js if (data.component) { ?>
-                <?js= '&lt' + name + ' ' + data.component.props.map(p => '<i>' + p.name + '</i>').join(' ') + ' /&gt' ?>
+                <?js= '&lt' + name + ' ' + data.component.props.map(p => '<i>' + p.name + '={}</i>').join(' ') + ' /&gt' ?>
             <?js } else { ?>
                 <?js= (kind === 'class' ? 'new ' : '') + name + (data.signature || '') ?>
             <?js } ?>
@@ -51,13 +51,6 @@ var self = this;
         <label>This:</label>
         <?js= this.linkto(data['this'], data['this']) ?>
     </p>
-<?js } ?>
-
-<?js if (data.component) { ?>
-    <?js if (data.component.props && data.component.props.length) { ?>
-        <h5>PropTypes:</h5>
-        <?js= self.partial('proptypes.tmpl', data.component) ?>
-    <?js } ?>
 <?js } ?>
 
 <?js if (data.params && params.length && !data.hideconstructor) { ?>

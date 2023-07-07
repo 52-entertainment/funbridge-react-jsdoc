@@ -1,38 +1,40 @@
-var reactDocs = require('react-docgen')
-var vueDocs = require('vue-docgen-api')
-var fs = require('fs')
-var path = require('path')
+var reactDocs = require('react-docgen');
+var vueDocs = require('vue-docgen-api');
+var fs = require('fs');
+var path = require('path');
 
 exports.handlers = {
-  beforeParse: function(e) {
+  beforeParse: function (e) {
     if (path.extname(e.filename) === '.vue') {
-      e.componentInfo = vueDocs.parse(e.filename)
-      var script = e.source.match(new RegExp('<script>(.*?)</script>', 's'))
-      e.source = script[1]
+      e.componentInfo = vueDocs.parse(e.filename);
+      var script = e.source.match(new RegExp('<script>(.*?)</script>', 's'));
+      e.source = script[1];
     }
   },
 
-  newDoclet: function({ doclet }) {
-    var filePath = path.join(doclet.meta.path, doclet.meta.filename)
-    const componentTag = (doclet.tags || []).find(tag => tag.title === 'component')
+  newDoclet: function ({ doclet }) {
+    var filePath = path.join(doclet.meta.path, doclet.meta.filename);
+    const componentTag = (doclet.tags || []).find(
+      (tag) => tag.title === 'component'
+    );
     if (componentTag) {
       if (path.extname(filePath) === '.vue') {
-        doclet.component = parseVue(filePath, doclet)
-        doclet.component.type = 'vue'
+        doclet.component = parseVue(filePath, doclet);
+        doclet.component.type = 'vue';
       } else {
-        doclet.component = parseReact(filePath, doclet)
-        doclet.component.type = 'react'
+        doclet.component = parseReact(filePath, doclet);
+        doclet.component.type = 'react';
       }
-      doclet.kind = 'class'
-      doclet.type = 'component'
+      doclet.kind = 'class';
+      doclet.type = 'component';
     } else {
       if (path.extname(filePath) === '.vue') {
-        const docGen = vueDocs.parse(filePath)
-        const name = docGen.displayName
+        const docGen = vueDocs.parse(filePath);
+        const name = docGen.displayName;
         if (doclet.kind === 'function' || doclet.kind === 'event') {
-          doclet.memberof = name
+          doclet.memberof = name;
         } else {
-          doclet.undocumented = true
+          doclet.undocumented = true;
         }
       }
 
@@ -42,8 +44,8 @@ exports.handlers = {
         // }
       }
     }
-  }
-}
+  },
+};
 
 var parseReact = function (filePath, doclet) {
   if (path.extname(filePath) === '.tsx') {
@@ -51,21 +53,24 @@ var parseReact = function (filePath, doclet) {
       props: [],
       displayName: doclet.name,
       filePath: filePath,
-    }
+    };
   }
-  var src = fs.readFileSync(filePath, 'UTF-8')
-  var docGen
+  var src = fs.readFileSync(filePath, 'UTF-8');
+  var docGen;
   try {
-    docGen = reactDocs.parse(src, reactDocs.resolver.findAllComponentDefinitions)[0];
+    docGen = reactDocs.parse(
+      src,
+      reactDocs.resolver.findAllComponentDefinitions
+    )[0];
   } catch (error) {
     if (error.message === 'No suitable component definition found.') {
       return {
         props: [],
         filePath: filePath,
         displayName: doclet.name,
-      }
+      };
     } else {
-      throw error
+      throw error;
     }
   }
 
@@ -76,35 +81,39 @@ var parseReact = function (filePath, doclet) {
       type: prop.type ? prop.type.name : prop.flowType.name,
       required: typeof prop.required === 'boolean' && prop.required,
       defaultValue: prop.defaultValue
-        ? (prop.defaultValue.computed ? 'function()' : prop.defaultValue.value)
-        : undefined
+        ? prop.defaultValue.computed
+          ? 'function()'
+          : prop.defaultValue.value
+        : undefined,
     })),
     displayName: docGen.displayName,
     filePath: filePath,
-  }
-}
+  };
+};
 
 var parseVue = function (filePath, doclet) {
-  const docGen = vueDocs.parse(filePath)
-  doclet.name = doclet.longname = docGen.displayName
+  const docGen = vueDocs.parse(filePath);
+  doclet.name = doclet.longname = docGen.displayName;
   return {
     displayName: docGen.displayName,
     filePath: filePath,
-    props: Object.values(docGen.props || {}).map(prop => ({
+    props: Object.values(docGen.props || {}).map((prop) => ({
       name: prop.name,
       description: prop.description,
       type: prop.type ? prop.type.name : prop.flowType.name,
       required: typeof prop.required === 'boolean' && prop.required,
       defaultValue: prop.defaultValue
-        ? (prop.defaultValue.func ? 'function()' : prop.defaultValue.value)
-        : undefined
+        ? prop.defaultValue.func
+          ? 'function()'
+          : prop.defaultValue.value
+        : undefined,
     })),
-    slots: Object.keys(docGen.slots || {}).map(key => ({
+    slots: Object.keys(docGen.slots || {}).map((key) => ({
       name: key,
       description: docGen.slots[key].description,
-    }))
-  }
-}
+    })),
+  };
+};
 
-exports.parseVue = parseVue
-exports.parseReact = parseReact
+exports.parseVue = parseVue;
+exports.parseReact = parseReact;

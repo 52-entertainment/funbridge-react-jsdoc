@@ -428,7 +428,7 @@ function buildMemberNav({
         var heading = itemHeading;
         if (subCategoryName) {
           heading =
-            heading === 'Globals'
+            heading === 'Functions'
               ? subCategoryName
               : heading + ' / ' + subCategoryName;
         }
@@ -535,7 +535,7 @@ function buildGroupNav({ members, title, showSingleSubCategory = false }) {
   nav += buildMemberNav({
     showSingleSubCategory,
     items: members.globals || [],
-    itemHeading: 'Globals',
+    itemHeading: 'Functions',
     itemsSeen: seen,
     linktoFn: linkto,
   });
@@ -622,6 +622,7 @@ function buildNav(members, navTypes = null, betterDocs) {
   const special = {
     Helper: '',
     Reducer: '',
+    Actions: '',
   };
 
   topNav += buildGroupNav({ members: rootScope });
